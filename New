@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Eye Security</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: A dashboard-style SPA. New sections for "Opportunity Summary" and "Decision Makers" have been added above the Deal Health Score for a better contextual overview. The core remains a 2x3 responsive grid for the MEDDIC components. This new structure prioritizes context and stakeholder visibility before diving into the tactical deal health, providing a more comprehensive and actionable tool for the AE. The interactive cards and checklists remain the primary means of user engagement. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Opportunity Summary & Decision Makers -> Goal: Inform -> Viz: Structured Text Blocks -> Interaction: None (static overview) -> Justification: Provides crucial context and stakeholder mapping upfront, which are essential for navigating a complex deal. -> Library/Method: Tailwind CSS
+        - Report Info: Overall Deal Health -> Goal: Inform -> Viz: Bar Chart -> Interaction: None (static view) -> Justification: Provides a quick, quantitative summary of the deal's strength based on all MEDDIC components. -> Library: Chart.js
+        - Report Info: Each MEDDIC section (Status, Evidence, Action Plan) -> Goal: Organize/Inform -> Viz: Interactive Cards -> Interaction: Click to expand/collapse, Checkboxes for action items -> Justification: Breaks down the complex report into manageable chunks. The expand/collapse interaction allows users to focus on one area at a time. The checklists turn the action plan into a live to-do list, promoting engagement and tracking. -> Library/Method: Vanilla JS, Tailwind CSS
+        - Report Info: Status (Strong, Developing, Weak) -> Goal: Inform/Compare -> Viz: Color-coded tags and icons -> Interaction: None (static view) -> Justification: Provides instant visual cues about the risk level of each component, allowing for rapid assessment. -> Library/Method: Tailwind CSS, Unicode Characters
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 120px;
+            max-height: 150px;
+        }
+        .card-header-button {
+            transition: background-color 0.2s ease-in-out;
+        }
+        .card-header-button:hover {
+            background-color: #f1f5f9;
+        }
+        .card-body {
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+        }
+        .card-body.open {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        .action-item input:checked + span {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        .status-strong { background-color: #dcfce7; color: #166534; }
+        .status-developing { background-color: #fef9c3; color: #854d0e; }
+        .status-weak { background-color: #fee2e2; color: #991b1b; }
+        .icon { font-size: 1.25rem; margin-right: 0.5rem; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">MEDDIC Deal Review</h1>
+            <p class="mt-2 text-lg text-gray-600">Cyber Eye Security Opportunity</p>
+        </header>
+
+        <main>
+            <section id="opportunity-summary" class="mb-12 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-900">Opportunity Summary</h2>
+                <p class="text-center text-gray-600 mb-4 max-w-3xl mx-auto">
+                    The client, Cyber Eye Security, is a commercial security systems integrator looking for a comprehensive platform to replace multiple disconnected systems (Dynamics, Syncro, Excel). Their goal is to streamline project management, maintenance scheduling, and CRM by adopting a single, end-to-end solution. The key drivers are improving workflow efficiency and gaining real-time financial visibility on projects.
+                </p>
+            </section>
+
+            <section id="decision-makers" class="mb-12 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-900">Key Stakeholders</h2>
+                <p class="text-center text-gray-600 mb-4 max-w-3xl mx-auto">
+                    This section identifies the key individuals involved in the decision-making process based on the latest conversations.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">John Weaver</h3>
+                        <p class="text-sm text-gray-600">Director & Key Champion</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">Justin Barrett</h3>
+                        <p class="text-sm text-gray-600">Director & Key Champion</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">Kalie</h3>
+                        <p class="text-sm text-gray-600">Admin/Office Team</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">Stephen Geiser</h3>
+                        <p class="text-sm text-gray-600">Sales/Former Simpro User</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">Jason Stott</h3>
+                        <p class="text-sm text-gray-600">Technical/Operations</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">Nick Fortuna</h3>
+                        <p class="text-sm text-gray-600">Operations</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">Corinna & Barbara</h3>
+                        <p class="text-sm text-gray-600">Accounts Team (Future Stakeholders)</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-gray-900">New Commercial Director</h3>
+                        <p class="text-sm text-gray-600">Joining in November (Future Stakeholder)</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="deal-health" class="mb-12 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-900">Overall Deal Health Score</h2>
+                <p class="text-center text-gray-600 mb-4 max-w-3xl mx-auto">
+                    This dashboard provides an interactive overview of the "Cyber Eye Security" deal based on the MEDDIC framework. The health score below summarizes the current standing, while the cards provide detailed evidence and actionable next steps to strengthen the opportunity and move it toward a successful close.
+                </p>
+                <div class="chart-container">
+                    <canvas id="dealHealthChart"></canvas>
+                </div>
+            </section>
+
+            <section id="meddic-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const dealData = {
+            metrics: {
+                title: "Metrics",
+                status: "Developing",
+                icon: '📊',
+                evidence: "The client wants to improve service/sales processes and move from a cheaper system. The customer portal's past success in winning a contract is a known value point. However, no specific, quantifiable financial impact (e.g., 'reduce costs by 20%') has been identified.",
+                actionPlan: [
+                    "Ask champion John: 'If you implemented Simpro, how would the business measure success in terms of cost savings, time saved, or new revenue streams?'",
+                    "Work with John and Justin to tie Simpro's value to a specific, measurable outcome for their business case."
+                ]
+            },
+            economic_buyer: {
+                title: "Economic Buyer",
+                status: "Weak",
+                icon: '💰',
+                evidence: "Directors John and Justin are involved, but it's not confirmed they are the final budget holders. John's comment 'we haven't quite budged for this, but... often we don't budget for things and still do it' indicates a potential higher authority or a formal process that is not yet understood.",
+                actionPlan: [
+                    "Confirm with John and Justin: 'Who has the final sign-off on an investment like this? Is there a formal budget approval process?'",
+                    "Propose a brief meeting with the Economic Buyer to align on the business case, framing it as ensuring the proposal meets strategic goals."
+                ]
+            },
+            decision_criteria: {
+                title: "Decision Criteria",
+                status: "Strong",
+                icon: '✅',
+                evidence: "The client's criteria are now much clearer. The team asked detailed questions about asset management, grouping assets by floor, customization, and integration with their existing ERP. These are well-defined, technical, and operational requirements.",
+                actionPlan: [
+                    "Reconfirm all documented criteria with the client in writing to ensure alignment.",
+                    "Use the client's explicit criteria to structure and highlight your final proposal, demonstrating how Simpro meets or exceeds each point."
+                ]
+            },
+            decision_process: {
+                title: "Decision Process",
+                status: "Developing",
+                icon: '🗺️',
+                evidence: "The timeline is more concrete with a goal for go-live in September and full implementation by November. Key stakeholders (Kalie, Nick, Jason, new commercial director) have been identified for future sessions, but a formal step-by-step process for the final decision is not yet fully defined.",
+                actionPlan: [
+                    "Schedule follow-up sessions with the newly identified stakeholders (accounts team, new commercial director) to control the next steps.",
+                    "Propose a joint project plan with the client that outlines the implementation journey from sign-off to go-live."
+                ]
+            },
+            identify_pain: {
+                title: "Identify Pain",
+                status: "Strong",
+                icon: '🔥',
+                evidence: "The client clearly articulated their pain: multiple, non-integrated systems (Dynamics, Syncro, Excel) causing 'double-handling' of data. Their current field service tool is cheap but insufficient. They waste time in manual meetings tracking project financials.",
+                actionPlan: [
+                    "Reiterate their pain in your follow-up email, positioning Simpro as the solution to eliminate 'double-handling' and provide real-time P&L visibility.",
+                    "Ensure the proposal directly addresses these specific pain points, framing the value around a unified, time-saving platform."
+                ]
+            },
+            champion: {
+                title: "Champion",
+                status: "Strong",
+                icon: '🏆',
+                evidence: "John and Justin are actively engaged, supportive, and pushing for a September timeline. The presence of Stephen, a former Simpro user who calls the product 'really powerful' and a 'massive selling tool', is a significant asset. Kalie and Nick also provided positive feedback.",
+                actionPlan: [
+                    "Leverage Stephen's enthusiasm. Ask him to be an internal advocate: 'Stephen, would you be willing to share your positive experience with the team?'",
+                    "Follow up with Kalie and Nick directly to confirm their support and turn them into internal advocates as well."
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('meddic-grid');
+            const statusMap = { 'Strong': 3, 'Developing': 2, 'Weak': 1 };
+            let totalScore = 0;
+            let count = 0;
+
+            for (const key in dealData) {
+                const item = dealData[key];
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md flex flex-col';
+
+                const statusClass = `status-${item.status.toLowerCase()}`;
+
+                card.innerHTML = `
+                    <button class="card-header-button text-left w-full p-4 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                                <span class="icon">${item.icon}</span>
+                                ${item.title}
+                            </h3>
+                            <div class="flex items-center">
+                                <span class="status-tag ${statusClass}">${item.status}</span>
+                                <span class="ml-4 text-gray-400 transform transition-transform duration-300">▼</span>
+                            </div>
+                        </div>
+                    </button>
+                    <div class="card-body px-6 pb-6">
+                        <div class="mt-4">
+                            <h4 class="font-semibold text-gray-700 mb-2">Evidence:</h4>
+                            <p class="text-gray-600 text-sm">${item.evidence}</p>
+                        </div>
+                        <div class="mt-6">
+                            <h4 class="font-semibold text-gray-700 mb-3">Action Plan:</h4>
+                            <ul class="space-y-3">
+                                ${item.actionPlan.map((action, index) => `
+                                    <li class="flex items-start action-item">
+                                        <input type="checkbox" id="${key}-action-${index}" class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        <label for="${key}-action-${index}" class="ml-3 text-sm text-gray-700">
+                                            <span>${action}</span>
+                                        </label>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+
+                totalScore += statusMap[item.status];
+                count++;
+            }
+
+            renderHealthChart(totalScore / (count * 3) * 100);
+            
+            grid.addEventListener('click', (e) => {
+                const headerButton = e.target.closest('.card-header-button');
+                if (headerButton) {
+                    const cardBody = headerButton.nextElementSibling;
+                    const arrow = headerButton.querySelector('.transform');
+                    cardBody.classList.toggle('open');
+                    arrow.classList.toggle('rotate-180');
+                }
+            });
+        });
+
+        function renderHealthChart(score) {
+            const ctx = document.getElementById('dealHealthChart').getContext('2d');
+            const scoreColor = score < 40 ? '#ef4444' : score < 75 ? '#f59e0b' : '#22c55e';
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Deal Health'],
+                    datasets: [{
+                        label: 'Score',
+                        data: [score],
+                        backgroundColor: [scoreColor],
+                        borderColor: [scoreColor],
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        barPercentage: 0.5,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                             ticks: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        },
+                        annotation: {
+                           annotations: {
+                                label1: {
+                                    type: 'label',
+                                    xValue: score,
+                                    yValue: 0,
+                                    xAdjust: -30,
+                                    content: [`${Math.round(score)}%`],
+                                    font: {
+                                        size: 16,
+                                        weight: 'bold'
+                                    },
+                                    color: '#ffffff'
+                                }
+                           }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
